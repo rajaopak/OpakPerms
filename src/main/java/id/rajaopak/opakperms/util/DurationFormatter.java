@@ -3,7 +3,6 @@ package id.rajaopak.opakperms.util;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.TranslatableComponent;
-import net.kyori.adventure.text.serializer.plain.PlainComponentSerializer;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;

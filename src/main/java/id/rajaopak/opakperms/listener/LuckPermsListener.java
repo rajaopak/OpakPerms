@@ -2,7 +2,6 @@ package id.rajaopak.opakperms.listener;
 
 import id.rajaopak.opakperms.OpakPerms;
 import id.rajaopak.opakperms.redis.JsonBuilder;
-import net.luckperms.api.LuckPerms;
 import net.luckperms.api.event.EventBus;
 import net.luckperms.api.event.node.NodeAddEvent;
 import net.luckperms.api.model.user.User;

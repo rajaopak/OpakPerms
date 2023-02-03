@@ -47,19 +47,17 @@ public final class OpakPerms extends JavaPlugin {
             this.luckPerms = provider.getProvider();
             new LuckPermsListener(this).register();
         }
-        this.register();
-        saveDefaultConfig();
+        
+        this.saveDefaultConfig();
 
-        System.out.println(getConfig().getString("host"));
-        System.out.println(getConfig().getInt("port"));
-        System.out.println(getConfig().getString("password"));
-        System.out.println(getConfig().getString("channel"));
         this.redisManager = new RedisManager(this);
 
         this.redisManager.connect(this.getConfig().getString("host"),
                 this.getConfig().getInt("port"),
                 this.getConfig().getString("password"),
                 this.getConfig().getString("channel"));
+
+        this.register();
     }
 
     @Override

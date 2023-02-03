@@ -4,4 +4,4 @@ main: id.rajaopak.opakperms.OpakPerms
 api-version: 1.17
 authors: [ rajaopak ]
 description: Managing syncing and logging perms action for LuckPerms
-depend: [ UniversePerms ]
+depend: [ LuckPerms ]
