@@ -1,0 +1,91 @@
+plugins {
+    id 'java'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'id.rajaopak'
+version = '0.1'
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'spigotmc-repo'
+        url = 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/'
+    }
+    maven {
+        name = 'sonatype'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
+}
+
+dependencies {
+    compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
+    compileOnly 'net.luckperms:api:5.4'
+
+    implementation 'redis.clients:jedis:4.3.0'
+    implementation 'org.jetbrains:annotations:23.0.0'
+    implementation 'org.projectlombok:lombok:1.18.22'
+
+    implementation "net.kyori:adventure-api:4.12.0"
+    implementation "net.kyori:adventure-platform-bukkit:4.2.0"
+
+    implementation 'cloud.commandframework:cloud-core:1.8.0'
+    implementation 'cloud.commandframework:cloud-annotations:1.8.0'
+    implementation 'cloud.commandframework:cloud-paper:1.8.0'
+    implementation 'cloud.commandframework:cloud-minecraft-extras:1.8.0'
+    implementation 'cloud.commandframework:cloud-brigadier:1.8.0'
+}
+
+def targetJavaVersion = 16
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+shadowJar {
+    relocate 'cloud.commandframework', 'id.rajaopak.cloud'
+
+    doLast {
+        copy {
+            from archivePath
+            into 'D:\\server\\bukkit\\plugins'
+        }
+        copy {
+            from archivePath
+            into 'D:\\server\\bukkit-Copy\\plugins'
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+task jar1(type: Jar) {
+    dependsOn shadowJar
+    from(shadowJar.archivePath)
+    destinationDir file('D:\\server\\bukkit\\plugins')
+}
+
+task jar2(type: Jar) {
+    dependsOn shadowJar
+    from(shadowJar.archivePath)
+    destinationDir file('D:\\server\\bukkit-Copy\\plugins')
+}
+
+assemble.dependsOn shadowJar

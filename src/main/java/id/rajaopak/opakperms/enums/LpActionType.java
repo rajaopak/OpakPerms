@@ -1,0 +1,17 @@
+package id.rajaopak.opakperms.enums;
+
+public enum LpActionType {
+
+    USER_SET_RANK,
+    USER_SET_RANK_TEMP,
+    USER_UNSET_RANK,
+    USER_UNSET_RANK_TEMP,
+    USER_ADD_PERMISSION,
+    USER_ADD_PERMISSION_TEMP,
+    USER_UNSET_PREFIX,
+    USER_UNSET_PREFIX_TEMP,
+    USER_ADD_PREFIX,
+    USER_ADD_PREFIX_TEMP,
+
+
+}
