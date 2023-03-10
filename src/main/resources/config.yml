@@ -1,4 +1,13 @@
+# require to set
+# server-name: 'server'
+
 host: 'localhost'
 port: 6379
 password: ''
-channel: 'OpakPermsSync'
+channel: 'opak:luckperms'
+
+# Player sync option
+sync-player-rank: true
+sync-player-prefix: false
+sync-player-suffix: false
+sync-player-permission: false

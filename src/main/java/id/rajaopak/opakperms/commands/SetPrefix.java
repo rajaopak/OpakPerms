@@ -34,12 +34,12 @@ public class SetPrefix extends CommandManager {
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
         if (!player.hasPlayedBefore()) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlayer not found!");
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
         if (!prefix.startsWith("\"") && !prefix.endsWith("\"")) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlease start the message with \" symbol and ends it with that symbol too.");
+            Utils.sendMessageWithPrefix(sender, "&cPlease start the message with \" symbol and ends it with that symbol too.");
             return;
         }
 

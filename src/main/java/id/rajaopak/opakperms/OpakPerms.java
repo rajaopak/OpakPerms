@@ -47,7 +47,7 @@ public final class OpakPerms extends JavaPlugin {
             this.luckPerms = provider.getProvider();
             new LuckPermsListener(this).register();
         }
-        
+
         this.saveDefaultConfig();
 
         this.redisManager = new RedisManager(this);
@@ -64,6 +64,7 @@ public final class OpakPerms extends JavaPlugin {
     public void onDisable() {
         // Plugin shutdown logic
         this.redisManager.close();
+        Bukkit.getScheduler().cancelTasks(this);
     }
 
     @SneakyThrows
@@ -150,10 +151,6 @@ public final class OpakPerms extends JavaPlugin {
         Arrays.stream(clazz).forEach(this.annotationParser::parse);
     }
 
-    public LuckPerms getLuckPerms() {
-        return luckPerms;
-    }
-
     public AnnotationParser<CommandSender> getAnnotationParser() {
         return this.annotationParser;
     }
@@ -166,7 +163,31 @@ public final class OpakPerms extends JavaPlugin {
         return this.minecraftHelp;
     }
 
+    public LuckPerms getLuckPerms() {
+        return this.luckPerms;
+    }
+
     public RedisManager getRedisManager() {
         return this.redisManager;
+    }
+
+    public boolean isSyncRank() {
+        return this.getConfig().getBoolean("sync-player-rank");
+    }
+
+    public boolean isSyncPrefix() {
+        return this.getConfig().getBoolean("sync-player-prefix");
+    }
+
+    public boolean isSyncSuffix() {
+        return this.getConfig().getBoolean("sync-player-suffix");
+    }
+
+    public boolean isSyncPermission() {
+        return this.getConfig().getBoolean("sync-player-permission");
+    }
+
+    public String getRedisChannel() {
+        return this.getConfig().getString("channel");
     }
 }

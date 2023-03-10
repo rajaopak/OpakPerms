@@ -1,17 +1,25 @@
 package id.rajaopak.opakperms.enums;
 
+import java.util.Arrays;
+
 public enum LpActionType {
 
-    USER_SET_RANK,
-    USER_SET_RANK_TEMP,
-    USER_UNSET_RANK,
-    USER_UNSET_RANK_TEMP,
-    USER_ADD_PERMISSION,
-    USER_ADD_PERMISSION_TEMP,
-    USER_UNSET_PREFIX,
-    USER_UNSET_PREFIX_TEMP,
-    USER_ADD_PREFIX,
-    USER_ADD_PREFIX_TEMP,
+    ADD("add"),
+    SET("set"),
+    REMOVE("remove"),
+    CLEAR("clear");
 
+    private final String name;
 
+    LpActionType(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public static LpActionType getAction(String name) {
+        return Arrays.stream(values()).filter(actionType -> actionType.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
 }

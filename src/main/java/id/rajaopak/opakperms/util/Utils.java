@@ -3,10 +3,6 @@ package id.rajaopak.opakperms.util;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +26,12 @@ public class Utils {
         return colors("&e&lOpak &a&l/ &r");
     }
 
-    public static void sendMsg(CommandSender sender, String msg) {
+    public static void sendMessage(CommandSender sender, String msg) {
         sender.sendMessage(colors(msg));
+    }
+
+    public static void sendMessageWithPrefix(CommandSender sender, String msg) {
+        sender.sendMessage(getPrefix() + colors(msg));
     }
 
 }

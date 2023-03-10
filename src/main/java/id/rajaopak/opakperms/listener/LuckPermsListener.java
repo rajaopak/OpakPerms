@@ -1,14 +1,16 @@
 package id.rajaopak.opakperms.listener;
 
 import id.rajaopak.opakperms.OpakPerms;
-import id.rajaopak.opakperms.redis.JsonBuilder;
+import id.rajaopak.opakperms.enums.LpActionType;
+import id.rajaopak.opakperms.manager.NodeExtractor;
+import id.rajaopak.opakperms.messager.UserUpdateMessageImpl;
 import net.luckperms.api.event.EventBus;
 import net.luckperms.api.event.node.NodeAddEvent;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
-import net.luckperms.api.node.NodeType;
+import net.luckperms.api.node.types.InheritanceNode;
 
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 public class LuckPermsListener {
 
@@ -24,39 +26,18 @@ public class LuckPermsListener {
     }
 
     public void listener(NodeAddEvent e) {
-        Node node = e.getNode();
-        System.out.println(node.getKey());
-        System.out.println(node.getType().name());
-        System.out.println(node.getContexts().toSet().stream().map(context -> context.getKey() + "-" + context.getValue()).collect(Collectors.joining(", ")));
-
         if (e.isUser()) {
+            Node node = e.getNode();
             User user = (User) e.getTarget();
 
-            if (node.getType() != NodeType.INHERITANCE) {
-                return;
+            if (node instanceof InheritanceNode) {
+                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
             }
-
-            JsonBuilder json = new JsonBuilder();
-
-            json.add("uuid", user.getUniqueId())
-                    .add("name", user.getUsername())
-                    .add("type", node.getType().name())
-                    .add("key", node.getKey())
-                    .add("value", node.getValue())
-                    .add("negated", node.isNegated())
-                    .add("hasExpired", node.hasExpired())
-                    .add("hasExpiry", node.hasExpiry());
-
-            if (node.getExpiry() != null) {
-                json.add("expiry", node.getExpiry().getEpochSecond());
-            }
-
-            if (!node.getContexts().isEmpty()) {
-                json.add("context", node.getContexts().toSet().stream().map(context -> context.getKey() + "-" + context.getValue()).collect(Collectors.joining(", ")));
-            }
-
-            this.core.getRedisManager().sendRequest(json.get());
         }
+    }
+
+    private UUID generatePingId() {
+        return UUID.randomUUID();
     }
 
 }

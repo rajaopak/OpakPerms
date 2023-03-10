@@ -2,7 +2,6 @@ package id.rajaopak.opakperms.redis;
 
 import id.rajaopak.opakperms.OpakPerms;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONObject;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -18,7 +17,9 @@ public class RedisManager {
     private boolean auth;
     private String password;
     private JedisPool subscriberPool;
+
     private JedisPool publisherPool;
+
     private JedisPubSub pubSub;
     private String channel;
 
@@ -42,11 +43,11 @@ public class RedisManager {
         return isRedisConnected();
     }
 
-    public void sendRequest(JSONObject object) {
+    public void sendRequest(String message) {
         try {
-            if (object == null) {
+            /*if (object == null) {
                 throw new IllegalStateException("Object that was being sent was null!");
-            }
+            }*/
 
             Jedis jedis = this.publisherPool.getResource();
             Throwable throwable = null;
@@ -57,7 +58,7 @@ public class RedisManager {
                         jedis.auth(this.password);
                     }
 
-                    jedis.publish(this.channel, object.toString());
+                    jedis.publish(this.channel, message);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -93,11 +94,11 @@ public class RedisManager {
             }
 
             if (this.subscriberPool != null && !this.subscriberPool.isClosed()) {
-                this.subscriberPool.close();
+                this.subscriberPool.destroy();
             }
 
             if (this.publisherPool != null && !this.publisherPool.isClosed()) {
-                this.publisherPool.close();
+                this.publisherPool.destroy();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -135,6 +136,14 @@ public class RedisManager {
                 e.printStackTrace();
             }
         });
+    }
+
+    public JedisPool getSubscriberPool() {
+        return subscriberPool;
+    }
+
+    public JedisPool getPublisherPool() {
+        return publisherPool;
     }
 
 }

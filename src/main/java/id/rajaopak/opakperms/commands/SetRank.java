@@ -6,7 +6,6 @@ import cloud.commandframework.annotations.CommandPermission;
 import id.rajaopak.opakperms.OpakPerms;
 import id.rajaopak.opakperms.manager.CommandManager;
 import id.rajaopak.opakperms.util.Utils;
-import net.luckperms.api.model.data.DataMutateResult;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.node.NodeType;
@@ -33,7 +32,7 @@ public class SetRank extends CommandManager {
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
         if (!player.hasPlayedBefore()) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlayer not found!");
+            Utils.sendMessage(sender, Utils.getPrefix() + "&cPlayer not found!");
             return;
         }
 
@@ -47,10 +46,10 @@ public class SetRank extends CommandManager {
 
                 user.data().add(node);
 
-                // ToDo: send message
+                Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + player.getName() + " &arank to &b" + group.getName() + "&a.");
             });
         } else {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cGroup with that name is not existed!");
+            Utils.sendMessageWithPrefix(sender, "&cGroup with that name is not existed!");
         }
     }
 
@@ -63,7 +62,7 @@ public class SetRank extends CommandManager {
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
         if (!player.hasPlayedBefore()) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlayer not found!");
+            Utils.sendMessage(sender, Utils.getPrefix() + "&cPlayer not found!");
             return;
         }
 
@@ -73,15 +72,12 @@ public class SetRank extends CommandManager {
             this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
                 Node node = InheritanceNode.builder(group).build();
 
-                DataMutateResult result = user.data().add(node);
-                if (result.wasSuccessful()) {
-
-                }
+                user.data().add(node);
 
                 // ToDo: send message
             });
         } else {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cGroup with that name is not existed!");
+            Utils.sendMessageWithPrefix(sender, "&cGroup with that name is not existed!");
         }
     }
 }

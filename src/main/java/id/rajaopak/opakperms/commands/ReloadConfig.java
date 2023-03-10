@@ -1,6 +1,7 @@
 package id.rajaopak.opakperms.commands;
 
 import cloud.commandframework.annotations.CommandMethod;
+import cloud.commandframework.annotations.CommandPermission;
 import id.rajaopak.opakperms.OpakPerms;
 import id.rajaopak.opakperms.util.Utils;
 import org.bukkit.command.CommandSender;
@@ -15,9 +16,10 @@ public class ReloadConfig {
     }
 
     @CommandMethod("opakreload")
+    @CommandPermission("opakperms.reload")
     public void testRedisConnection(final @NonNull CommandSender sender) {
         this.core.reloadConfig();
-        Utils.sendMsg(sender, "&aConfig reloaded!");
+        Utils.sendMessageWithPrefix(sender, "&aConfig reloaded!");
     }
 
 }

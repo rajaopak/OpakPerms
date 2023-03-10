@@ -48,7 +48,7 @@ public class CommandManager {
 
             Player targetName = Bukkit.getPlayer(arg);
             if (targetName == null) {
-                Utils.sendMsg(sender, Utils.getPrefix() + "&aNo player founded!");
+                Utils.sendMessage(sender, Utils.getPrefix() + "&aNo player founded!");
                 return callback;
             }
 
@@ -57,7 +57,7 @@ public class CommandManager {
         }
 
         if (arg == null) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlease add specific player!");
+            Utils.sendMessage(sender, Utils.getPrefix() + "&cPlease add specific player!");
             callback.setNotify(true);
             return callback;
         }
@@ -71,7 +71,7 @@ public class CommandManager {
 
         Player targetName = Bukkit.getPlayer(arg);
         if (targetName == null) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&aNo player founded!");
+            Utils.sendMessage(sender, Utils.getPrefix() + "&aNo player founded!");
             return callback;
         }
 
@@ -101,7 +101,7 @@ public class CommandManager {
 
             OfflinePlayer targetName = Bukkit.getOfflinePlayer(arg);
             if (!targetName.getPlayer().hasPlayedBefore()) {
-                Utils.sendMsg(sender, Utils.getPrefix() + "&aNo player founded!");
+                Utils.sendMessage(sender, Utils.getPrefix() + "&aNo player founded!");
                 return callback;
             }
 
@@ -110,7 +110,7 @@ public class CommandManager {
         }
 
         if (arg == null) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlease add specific player!");
+            Utils.sendMessage(sender, Utils.getPrefix() + "&cPlease add specific player!");
             callback.setNotify(true);
             return callback;
         }
@@ -124,7 +124,7 @@ public class CommandManager {
 
         OfflinePlayer targetName = Bukkit.getOfflinePlayer(arg);
         if (!targetName.getPlayer().hasPlayedBefore()) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&aNo player founded!");
+            Utils.sendMessage(sender, Utils.getPrefix() + "&aNo player founded!");
             return callback;
         }
 
@@ -180,12 +180,12 @@ public class CommandManager {
 
     @Suggestions("players")
     public List<String> players(CommandContext<CommandSender> sender, String context) {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().collect(Collectors.toCollection(() -> List.of("*", "@a", "@all")));
+        return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(context.toLowerCase())).sorted().collect(Collectors.toCollection(() -> List.of("*", "@a", "@all")));
     }
 
     @Suggestions("player")
     public List<String> player(CommandContext<CommandSender> sender, String context) {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().collect(Collectors.toList());
+        return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(s -> s.toLowerCase().startsWith(context.toLowerCase())).sorted().collect(Collectors.toList());
     }
 
     @Suggestions("toggles")
@@ -195,12 +195,12 @@ public class CommandManager {
 
     @Suggestions("rank")
     public List<String> rank(final @NonNull CommandContext<CommandSender> context, final @NonNull String input) {
-        return core.getLuckPerms().getGroupManager().getLoadedGroups().stream().map(Group::getName).collect(Collectors.toList());
+        return this.core.getLuckPerms().getGroupManager().getLoadedGroups().stream().map(Group::getName).filter(s -> s.toLowerCase().startsWith(input.toLowerCase())).sorted().collect(Collectors.toList());
     }
 
     @Suggestions("permission")
     public List<String> permission(final @NonNull CommandContext<CommandSender> context, final @NonNull String input) {
-        return List.of("No Suggestion for now");
+        return this.core.getLuckPerms().getPlatform().getKnownPermissions().stream().filter(s -> s.toLowerCase().startsWith(input.toLowerCase())).sorted().toList();
     }
 
     protected static class TargetsCallback {
@@ -248,12 +248,12 @@ public class CommandManager {
             return this.notify;
         }
 
-        public Set<Player> getTargets() {
-            return this.targets;
-        }
-
         public void setNotify(boolean notify) {
             this.notify = notify;
+        }
+
+        public Set<Player> getTargets() {
+            return this.targets;
         }
 
         public void setTargets(Set<Player> targets) {
@@ -333,12 +333,12 @@ public class CommandManager {
             return this.notify;
         }
 
-        public Set<OfflinePlayer> getTargets() {
-            return this.targets;
-        }
-
         public void setNotify(boolean notify) {
             this.notify = notify;
+        }
+
+        public Set<OfflinePlayer> getTargets() {
+            return this.targets;
         }
 
         public void setTargets(Set<OfflinePlayer> targets) {

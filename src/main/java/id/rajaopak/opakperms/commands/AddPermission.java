@@ -34,7 +34,7 @@ public class AddPermission extends CommandManager {
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
         if (!player.hasPlayedBefore()) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlayer not found!");
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
@@ -46,7 +46,7 @@ public class AddPermission extends CommandManager {
             if (value.equalsIgnoreCase("false")) {
                 v = "false";
             } else {
-                Utils.sendMsg(sender, Utils.getPrefix() + "&cPlease select between true/false.");
+                Utils.sendMessageWithPrefix(sender, "&cPlease select between true/false.");
                 return;
             }
         }
@@ -80,7 +80,7 @@ public class AddPermission extends CommandManager {
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
         if (!player.hasPlayedBefore()) {
-            Utils.sendMsg(sender, Utils.getPrefix() + "&cPlayer not found!");
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
