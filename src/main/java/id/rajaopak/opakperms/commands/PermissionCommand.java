@@ -18,7 +18,6 @@ import org.bukkit.command.CommandSender;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.time.Duration;
 import java.util.UUID;
 
 public class PermissionCommand extends CommandManager {
@@ -83,8 +82,8 @@ public class PermissionCommand extends CommandManager {
     @CommandMethod("removepermission <player> [permission]")
     @CommandPermission("opakperms.removepermission")
     public void removePermission(final @NonNull CommandSender sender,
-                              final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
-                              final @NonNull @Argument(value = "permission", suggestions = "playerPermission") String permission) {
+                                 final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
+                                 final @NonNull @Argument(value = "permission", suggestions = "playerPermission") String permission) {
 
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
@@ -115,7 +114,7 @@ public class PermissionCommand extends CommandManager {
     @CommandMethod("removepermission <player>")
     @CommandPermission("opakperms.clearpermission")
     public void clearPermission(final @NonNull CommandSender sender,
-                              final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName) {
+                                final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName) {
 
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 

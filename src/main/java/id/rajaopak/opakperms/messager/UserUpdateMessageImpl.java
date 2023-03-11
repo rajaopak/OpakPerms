@@ -5,12 +5,10 @@ import id.rajaopak.opakperms.enums.LpActionType;
 import id.rajaopak.opakperms.manager.MessengerManager;
 import id.rajaopak.opakperms.manager.NodeExtractor;
 import net.luckperms.api.messenger.message.type.UserUpdateMessage;
-import net.luckperms.api.node.NodeType;
 import org.bukkit.Bukkit;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.util.Objects;
 import java.util.UUID;
 
 public class UserUpdateMessageImpl extends AbstractMessage implements UserUpdateMessage {

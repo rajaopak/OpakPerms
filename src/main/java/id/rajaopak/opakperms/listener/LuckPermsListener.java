@@ -8,7 +8,6 @@ import net.luckperms.api.event.EventBus;
 import net.luckperms.api.event.node.NodeAddEvent;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
-import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.node.types.PermissionNode;
 import net.luckperms.api.node.types.PrefixNode;

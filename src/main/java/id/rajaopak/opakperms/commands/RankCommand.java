@@ -32,8 +32,8 @@ public class RankCommand extends CommandManager {
     @CommandMethod("setrank <player> [rank]")
     @CommandPermission("opakperms.setrank")
     public void setRank(final @NonNull CommandSender sender,
-                              final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
-                              final @NonNull @Argument(value = "rank", suggestions = "rank") String rank) {
+                        final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
+                        final @NonNull @Argument(value = "rank", suggestions = "rank") String rank) {
 
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
@@ -70,8 +70,8 @@ public class RankCommand extends CommandManager {
     @CommandMethod("addrank <player> [rank]")
     @CommandPermission("opakperms.addrank")
     public void addRank(final @NonNull CommandSender sender,
-                              final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
-                              final @NonNull @Argument(value = "rank", suggestions = "rank") String rank) {
+                        final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
+                        final @NonNull @Argument(value = "rank", suggestions = "rank") String rank) {
 
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
@@ -106,8 +106,8 @@ public class RankCommand extends CommandManager {
     @CommandMethod("removerank <player> [rank]")
     @CommandPermission("opakperms.removerank")
     public void removeRank(final @NonNull CommandSender sender,
-                              final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
-                              final @NonNull @Argument(value = "rank", suggestions = "rank") String rank) {
+                           final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
+                           final @NonNull @Argument(value = "rank", suggestions = "rank") String rank) {
 
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
@@ -142,7 +142,7 @@ public class RankCommand extends CommandManager {
     @CommandMethod("clearrank <player>")
     @CommandPermission("opakperms.removerank")
     public void clearRank(final @NonNull CommandSender sender,
-                              final @NonNull @Argument(value = "player", suggestions = "player") String targetName) {
+                          final @NonNull @Argument(value = "player", suggestions = "player") String targetName) {
 
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 

@@ -34,15 +34,13 @@ import static net.kyori.adventure.text.Component.text;
 @Getter
 public final class OpakPerms extends JavaPlugin {
 
+    @Getter
+    private static boolean debug;
     private LuckPerms luckPerms;
-
     private AnnotationParser<CommandSender> annotationParser;
     private PaperCommandManager<CommandSender> manager;
     private MinecraftHelp<CommandSender> minecraftHelp;
     private RedisManager redisManager;
-
-    @Getter
-    private static boolean debug;
 
     @Override
     public void onEnable() {

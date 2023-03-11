@@ -15,11 +15,11 @@ public enum LpActionType {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
     public static LpActionType getAction(String name) {
         return Arrays.stream(values()).filter(actionType -> actionType.name.equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
+    public String getName() {
+        return name;
     }
 }
