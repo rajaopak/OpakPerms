@@ -203,6 +203,11 @@ public class CommandManager {
         return this.core.getLuckPerms().getPlatform().getKnownPermissions().stream().filter(s -> s.toLowerCase().startsWith(input.toLowerCase())).sorted().toList();
     }
 
+    @Suggestions("playerPermission")
+    public List<String> playerPermission(final @NonNull CommandContext<CommandSender> context, final @NonNull String input) {
+        return this.core.getLuckPerms().getUserManager().getUser((String) context.get("player")).getCachedData().getPermissionData().getPermissionMap().keySet().stream().filter(s -> s.toLowerCase().startsWith(input.toLowerCase())).sorted().toList();
+    }
+
     protected static class TargetsCallback {
         private boolean notify = false;
         private Set<Player> targets = new HashSet<>();

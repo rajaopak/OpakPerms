@@ -14,6 +14,7 @@ import com.google.common.reflect.ClassPath;
 import id.rajaopak.opakperms.listener.LuckPermsListener;
 import id.rajaopak.opakperms.redis.RedisManager;
 import id.rajaopak.opakperms.util.Utils;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
 import net.kyori.adventure.text.format.TextColor;
@@ -30,6 +31,7 @@ import java.util.function.Function;
 
 import static net.kyori.adventure.text.Component.text;
 
+@Getter
 public final class OpakPerms extends JavaPlugin {
 
     private LuckPerms luckPerms;
@@ -38,6 +40,9 @@ public final class OpakPerms extends JavaPlugin {
     private PaperCommandManager<CommandSender> manager;
     private MinecraftHelp<CommandSender> minecraftHelp;
     private RedisManager redisManager;
+
+    @Getter
+    private static boolean debug;
 
     @Override
     public void onEnable() {
@@ -49,6 +54,7 @@ public final class OpakPerms extends JavaPlugin {
         }
 
         this.saveDefaultConfig();
+        debug = this.getConfig().getBoolean("debug");
 
         this.redisManager = new RedisManager(this);
 
@@ -151,24 +157,8 @@ public final class OpakPerms extends JavaPlugin {
         Arrays.stream(clazz).forEach(this.annotationParser::parse);
     }
 
-    public AnnotationParser<CommandSender> getAnnotationParser() {
-        return this.annotationParser;
-    }
-
-    public PaperCommandManager<CommandSender> getManager() {
-        return this.manager;
-    }
-
-    public MinecraftHelp<CommandSender> getMinecraftHelp() {
-        return this.minecraftHelp;
-    }
-
-    public LuckPerms getLuckPerms() {
-        return this.luckPerms;
-    }
-
-    public RedisManager getRedisManager() {
-        return this.redisManager;
+    public void reload() {
+        debug = this.getConfig().getBoolean("debug");
     }
 
     public boolean isSyncRank() {

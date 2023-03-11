@@ -19,6 +19,7 @@ public class ReloadConfig {
     @CommandPermission("opakperms.reload")
     public void testRedisConnection(final @NonNull CommandSender sender) {
         this.core.reloadConfig();
+        this.core.reload();
         Utils.sendMessageWithPrefix(sender, "&aConfig reloaded!");
     }
 

@@ -1,6 +1,8 @@
 package id.rajaopak.opakperms.util;
 
+import id.rajaopak.opakperms.OpakPerms;
 import net.md_5.bungee.api.ChatColor;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 
 import java.util.regex.Matcher;
@@ -20,6 +22,12 @@ public class Utils {
         }
 
         return ChatColor.translateAlternateColorCodes('&', matcher.appendTail(buffer).toString());
+    }
+
+    public static void logDebug(String message) {
+        if (OpakPerms.isDebug()) {
+            Bukkit.getLogger().info(colors(message));
+        }
     }
 
     public static String getPrefix() {

@@ -5,9 +5,12 @@ import id.rajaopak.opakperms.enums.LpActionType;
 import id.rajaopak.opakperms.manager.MessengerManager;
 import id.rajaopak.opakperms.manager.NodeExtractor;
 import net.luckperms.api.messenger.message.type.UserUpdateMessage;
+import net.luckperms.api.node.NodeType;
+import org.bukkit.Bukkit;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.util.Objects;
 import java.util.UUID;
 
 public class UserUpdateMessageImpl extends AbstractMessage implements UserUpdateMessage {
@@ -15,6 +18,7 @@ public class UserUpdateMessageImpl extends AbstractMessage implements UserUpdate
     private final String userName;
     private final LpActionType actionType;
     private final NodeExtractor.Extractor extractor;
+
     public UserUpdateMessageImpl(UUID id, String name, LpActionType action, NodeExtractor.Extractor extractor) {
         super(id);
         this.userName = name;
@@ -34,25 +38,13 @@ public class UserUpdateMessageImpl extends AbstractMessage implements UserUpdate
         }
         String userName = nameElement.getAsString();
 
-        JsonElement typeElement = content.getAsJsonObject().get("type");
-        if (typeElement == null) {
-            throw new IllegalStateException("Incoming message has no type argument: " + content);
-        }
-        String type = typeElement.getAsString();
-
-        JsonElement valueElement = content.getAsJsonObject().get("value");
-        if (valueElement == null) {
-            throw new IllegalStateException("Incoming message has no value argument: " + content);
-        }
-        String value = valueElement.getAsString();
-
         return new UserUpdateMessageImpl(id, userName, actionType, NodeExtractor.deserialize(content.getAsString()));
     }
 
     @Override
     @Deprecated
     public @NonNull UUID getUserUniqueId() {
-        return null;
+        return Bukkit.getOfflinePlayer(this.userName).getUniqueId();
     }
 
     public @NonNull String getUserName() {

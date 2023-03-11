@@ -43,43 +43,30 @@ public class RedisManager {
         return isRedisConnected();
     }
 
-    public void sendRequest(String message) {
+    public boolean sendRequest(String message) {
+        if (!this.isRedisConnected()) return false;
+
         try {
-            /*if (object == null) {
+            if (message == null) {
                 throw new IllegalStateException("Object that was being sent was null!");
-            }*/
+            }
 
-            Jedis jedis = this.publisherPool.getResource();
-            Throwable throwable = null;
-
-            try {
+            try (Jedis jedis = this.publisherPool.getResource()) {
                 try {
                     if (this.auth) {
                         jedis.auth(this.password);
                     }
 
                     jedis.publish(this.channel, message);
+                    return true;
                 } catch (Exception e) {
                     e.printStackTrace();
-                }
-            } catch (Throwable e) {
-                throwable = e;
-                throw e;
-            } finally {
-                if (jedis != null) {
-                    if (throwable != null) {
-                        try {
-                            jedis.close();
-                        } catch (Throwable e) {
-                            throwable.addSuppressed(e);
-                        }
-                    } else {
-                        jedis.close();
-                    }
+                    return false;
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -91,14 +78,17 @@ public class RedisManager {
         try {
             if (this.pubSub != null && this.pubSub.isSubscribed()) {
                 this.pubSub.unsubscribe();
+                this.pubSub = null;
             }
 
             if (this.subscriberPool != null && !this.subscriberPool.isClosed()) {
                 this.subscriberPool.destroy();
+                this.subscriberPool = null;
             }
 
             if (this.publisherPool != null && !this.publisherPool.isClosed()) {
                 this.publisherPool.destroy();
+                this.publisherPool = null;
             }
         } catch (Exception e) {
             e.printStackTrace();

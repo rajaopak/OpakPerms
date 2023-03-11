@@ -8,8 +8,12 @@ import id.rajaopak.opakperms.manager.NodeExtractor;
 import id.rajaopak.opakperms.messager.UserUpdateMessageImpl;
 import id.rajaopak.opakperms.util.ExpiringSet;
 import id.rajaopak.opakperms.util.GsonProvider;
+import id.rajaopak.opakperms.util.Utils;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
+import net.luckperms.api.node.ChatMetaType;
+import net.luckperms.api.node.Node;
+import net.luckperms.api.node.NodeBuilder;
 import net.luckperms.api.node.NodeType;
 import net.luckperms.api.node.types.InheritanceNode;
 import net.luckperms.api.node.types.PermissionNode;
@@ -99,113 +103,199 @@ public class PubSubListener extends JedisPubSub {
             return;
         }
 
-        this.core.getLogger().info("[Messaging] Received user update ping for '" + user.getUsername() + "' with id: " + message.getId());
+        Utils.logDebug("[Messaging] Received user update ping for '" + user.getUsername() + "' with id: " + message.getId());
 
-        if (message.getExtractor().getType().name().equals(NodeType.INHERITANCE.name()) && this.core.isSyncRank() && message.getExtractor() instanceof NodeExtractor.InheritanceNodeExtractor g) {
-            Group group = this.core.getLuckPerms().getGroupManager().getGroup(g.getKey());
-
-            if (group == null) {
-                this.core.getLogger().info("[Messaging] Group with name " + message.getExtractor().getKey() + " is null.");
-                return;
-            }
-
+        if (message.getActionType() == LpActionType.ADD) {
             this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
-                InheritanceNode.Builder node = InheritanceNode.builder(group).value(g.getValue());
+                if (message.getExtractor().getType().name().equals(NodeType.INHERITANCE.name()) && this.core.isSyncRank() && message.getExtractor() instanceof NodeExtractor.InheritanceNodeExtractor g) {
+                    Group group = this.core.getLuckPerms().getGroupManager().getGroup(g.getKey());
 
-                if (g.getContexts() != null) {
-                    node.context(g.getContexts());
-                }
+                    if (group == null) {
+                        Utils.logDebug("[Messaging] Group with name " + message.getExtractor().getKey() + " is null.");
+                        return;
+                    }
 
-                if (g.getExpiry() != null) {
-                    node.expiry(g.getExpiry());
-                }
+                    InheritanceNode.Builder node = InheritanceNode.builder(group).value(g.getValue());
 
-                if (message.getActionType() == LpActionType.ADD) {
+                    if (g.getContexts() != null) {
+                        node.context(g.getContexts());
+                    }
+
+                    if (g.getExpiry() != null) {
+                        node.expiry(g.getExpiry());
+                    }
+
                     u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.SET) {
+                    Utils.logDebug("[Messaging] Successfully added " + message.getUserName() + " to group " + group.getName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PREFIX.name()) && this.core.isSyncPrefix() && message.getExtractor() instanceof NodeExtractor.PrefixNodeExtractor p) {
+                    PrefixNode.Builder node = PrefixNode.builder(p.getKey(), p.getPriority()).value(p.getValue());
+
+                    if (p.getContexts() != null) {
+                        node.context(p.getContexts());
+                    }
+
+                    if (p.getExpiry() != null) {
+                        node.expiry(p.getExpiryDuration());
+                    }
+
+                    u.data().add(node.build());
+                    Utils.logDebug("[Messaging] Successfully added prefix (" + p.getKey() + "&r) to " + message.getUserName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.SUFFIX.name()) && this.core.isSyncSuffix() && message.getExtractor() instanceof NodeExtractor.SuffixNodeExtractor s) {
+                    SuffixNode.Builder node = SuffixNode.builder(s.getKey(), s.getPriority()).value(s.getValue());
+
+                    if (s.getContexts() != null) {
+                        node.context(s.getContexts());
+                    }
+
+                    if (s.getExpiry() != null) {
+                        node.expiry(s.getExpiryDuration());
+                    }
+
+                    u.data().add(node.build());
+                    Utils.logDebug("[Messaging] Successfully added suffix (" + s.getKey() + "&r) to " + message.getUserName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PERMISSION.name()) && this.core.isSyncPermission() && message.getExtractor() instanceof NodeExtractor.PermissionNodeExtractor per) {
+                    PermissionNode.Builder node = PermissionNode.builder(per.getKey()).value(per.getValue());
+
+                    if (per.getContexts() != null) {
+                        node.context(per.getContexts());
+                    }
+
+                    if (per.getExpiry() != null) {
+                        node.expiry(per.getExpiryDuration());
+                    }
+
+                    u.data().add(node.build());
+                    Utils.logDebug("[Messaging] Successfully added permission (" + per.getKey() + "&r) to " + message.getUserName() + ".");
+                }
+            });
+        } else if (message.getActionType() == LpActionType.SET) {
+            this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
+                if (message.getExtractor().getType().name().equals(NodeType.INHERITANCE.name()) && this.core.isSyncRank() && message.getExtractor() instanceof NodeExtractor.InheritanceNodeExtractor g) {
+                    Group group = this.core.getLuckPerms().getGroupManager().getGroup(g.getKey());
+
+                    if (group == null) {
+                        Utils.logDebug("[Messaging] Group with name " + message.getExtractor().getKey() + " is null.");
+                        return;
+                    }
+
+                    InheritanceNode.Builder node = InheritanceNode.builder(group).value(g.getValue());
+
+                    if (g.getContexts() != null) {
+                        node.context(g.getContexts());
+                    }
+
+                    if (g.getExpiry() != null) {
+                        node.expiry(g.getExpiry());
+                    }
+
                     u.data().clear(NodeType.INHERITANCE::matches);
                     u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.REMOVE) {
+                    Utils.logDebug("[Messaging] Successfully set " + message.getUserName() + " to group " + group.getName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PREFIX.name()) && this.core.isSyncPrefix() && message.getExtractor() instanceof NodeExtractor.PrefixNodeExtractor p) {
+                    PrefixNode.Builder node = PrefixNode.builder(p.getKey(), p.getPriority()).value(p.getValue());
+
+                    if (p.getContexts() != null) {
+                        node.context(p.getContexts());
+                    }
+
+                    if (p.getExpiry() != null) {
+                        node.expiry(p.getExpiryDuration());
+                    }
+
+                    u.data().clear(NodeType.PREFIX::matches);
+                    u.data().add(node.build());
+                    Utils.logDebug("[Messaging] Successfully set prefix (" + p.getKey() + "&r) to " + message.getUserName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.SUFFIX.name()) && this.core.isSyncSuffix() && message.getExtractor() instanceof NodeExtractor.SuffixNodeExtractor s) {
+                    SuffixNode.Builder node = SuffixNode.builder(s.getKey(), s.getPriority()).value(s.getValue());
+
+                    if (s.getContexts() != null) {
+                        node.context(s.getContexts());
+                    }
+
+                    if (s.getExpiry() != null) {
+                        node.expiry(s.getExpiryDuration());
+                    }
+
+                    u.data().clear(NodeType.PREFIX::matches);
+                    u.data().add(node.build());
+                    Utils.logDebug("[Messaging] Successfully set suffix (" + s.getKey() + "&r) to " + message.getUserName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PERMISSION.name()) && this.core.isSyncPermission() && message.getExtractor() instanceof NodeExtractor.PermissionNodeExtractor per) {
+                    PermissionNode.Builder node = PermissionNode.builder(per.getKey()).value(per.getValue());
+
+                    if (per.getContexts() != null) {
+                        node.context(per.getContexts());
+                    }
+
+                    if (per.getExpiry() != null) {
+                        node.expiry(per.getExpiryDuration());
+                    }
+
+                    u.data().clear(NodeType.PERMISSION::matches);
+                    u.data().add(node.build());
+                    Utils.logDebug("[Messaging] Successfully set permission (" + per.getKey() + "&r) to " + message.getUserName() + ".");
+                }
+            });
+        } else if (message.getActionType() == LpActionType.REMOVE) {
+            this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
+                if (message.getExtractor().getType().name().equals(NodeType.INHERITANCE.name()) && this.core.isSyncRank() && message.getExtractor() instanceof NodeExtractor.InheritanceNodeExtractor g) {
+                    Group group = this.core.getLuckPerms().getGroupManager().getGroup(g.getKey());
+
+                    if (group == null) {
+                        Utils.logDebug("[Messaging] Group with name " + message.getExtractor().getKey() + " is null.");
+                        return;
+                    }
+
+                    InheritanceNode.Builder node = InheritanceNode.builder(group).value(g.getValue());
+
+                    if (g.getContexts() != null) {
+                        node.context(g.getContexts());
+                    }
+
+                    if (g.getExpiry() != null) {
+                        node.expiry(g.getExpiry());
+                    }
+
                     u.data().remove(node.build());
-                } else if (message.getActionType() == LpActionType.CLEAR) {
+                    Utils.logDebug("[Messaging] Successfully remove " + message.getUserName() + " from group " + group.getName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PREFIX.name()) && this.core.isSyncPrefix() && message.getExtractor() instanceof NodeExtractor.PrefixNodeExtractor p) {
+                    Node node = ChatMetaType.PREFIX.builder().priority(p.getPriority()).build();
+
+                    u.data().remove(node);
+                    Utils.logDebug("[Messaging] Successfully remove prefix with priority" + p.getPriority() + " from " + message.getUserName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.SUFFIX.name()) && this.core.isSyncSuffix() && message.getExtractor() instanceof NodeExtractor.SuffixNodeExtractor s) {
+                    Node node = ChatMetaType.SUFFIX.builder().priority(s.getPriority()).build();
+
+                    u.data().remove(node);
+                    Utils.logDebug("[Messaging] Successfully remove suffix with priority " + s.getPriority() + " from " + message.getUserName() + ".");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PERMISSION.name()) && this.core.isSyncPermission() && message.getExtractor() instanceof NodeExtractor.PermissionNodeExtractor per) {
+                    PermissionNode.Builder node = PermissionNode.builder(per.getKey()).value(per.getValue());
+
+                    if (per.getContexts() != null) {
+                        node.context(per.getContexts());
+                    }
+
+                    if (per.getExpiry() != null) {
+                        node.expiry(per.getExpiryDuration());
+                    }
+
+                    u.data().remove(node.build());
+                    Utils.logDebug("[Messaging] Successfully remove permission (" + per.getKey() + "&r) from " + message.getUserName() + ".");
+                }
+            });
+        } else if (message.getActionType() == LpActionType.CLEAR) {
+            this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
+                if (message.getExtractor().getType().name().equals(NodeType.INHERITANCE.name()) && this.core.isSyncRank()) {
                     u.data().clear(NodeType.INHERITANCE::matches);
-                }
-            });
-        } else if (message.getExtractor().getType().name().equals(NodeType.PREFIX.name()) && this.core.isSyncPrefix() && message.getExtractor() instanceof NodeExtractor.PrefixNodeExtractor p) {
-            String prefix = p.getKey();
-            int priority = p.getPriority();
-
-            this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
-                PrefixNode.Builder node = PrefixNode.builder(prefix, priority);
-
-                if (p.getContexts() != null) {
-                    node.context(p.getContexts());
-                }
-
-                if (p.getExpiry() != null) {
-                    node.expiry(p.getExpiryDuration());
-                }
-
-                if (message.getActionType() == LpActionType.ADD) {
-                    u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.SET) {
+                    Utils.logDebug("[Messaging] Successfully clear all group that " + message.getUserName() + " joined.");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PREFIX.name()) && this.core.isSyncPrefix()) {
                     u.data().clear(NodeType.PREFIX::matches);
-                    u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.REMOVE) {
-                    u.data().remove(node.build());
-                } else if (message.getActionType() == LpActionType.CLEAR) {
-                    u.data().clear(NodeType.PREFIX::matches);
-                }
-            });
-        } else if (message.getExtractor().getType().name().equals(NodeType.SUFFIX.name()) && this.core.isSyncSuffix() && message.getExtractor() instanceof NodeExtractor.SuffixNodeExtractor s) {
-            String suffix = s.getKey();
-            int priority = s.getPriority();
-
-            this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
-                SuffixNode.Builder node = SuffixNode.builder(suffix, priority);
-
-                if (s.getContexts() != null) {
-                    node.context(s.getContexts());
-                }
-
-                if (s.getExpiry() != null) {
-                    node.expiry(s.getExpiry());
-                }
-
-                if (message.getActionType() == LpActionType.ADD) {
-                    u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.SET) {
+                    Utils.logDebug("[Messaging] Successfully clear all prefix that " + message.getUserName() + " has.");
+                } else if (message.getExtractor().getType().name().equals(NodeType.SUFFIX.name()) && this.core.isSyncSuffix()) {
                     u.data().clear(NodeType.SUFFIX::matches);
-                    u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.REMOVE) {
-                    u.data().remove(node.build());
-                } else if (message.getActionType() == LpActionType.CLEAR) {
-                    u.data().clear(NodeType.SUFFIX::matches);
-                }
-            });
-        } else if (message.getExtractor().getType().name().equals(NodeType.PERMISSION.name()) && this.core.isSyncPermission() && message.getExtractor() instanceof NodeExtractor.PermissionNodeExtractor per) {
-            String permission = per.getKey();
-
-            this.core.getLuckPerms().getUserManager().modifyUser(user.getUniqueId(), u -> {
-                PermissionNode.Builder node = PermissionNode.builder(permission);
-
-                if (per.getContexts() != null) {
-                    node.context(per.getContexts());
-                }
-
-                if (per.getExpiry() != null) {
-                    node.expiry(per.getExpiryDuration());
-                }
-
-                if (message.getActionType() == LpActionType.ADD) {
-                    u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.SET) {
+                    Utils.logDebug("[Messaging] Successfully clear all suffix that " + message.getUserName() + " has.");
+                } else if (message.getExtractor().getType().name().equals(NodeType.PERMISSION.name()) && this.core.isSyncPermission()) {
                     u.data().clear(NodeType.PERMISSION::matches);
-                    u.data().add(node.build());
-                } else if (message.getActionType() == LpActionType.REMOVE) {
-                    u.data().remove(node.build());
-                } else if (message.getActionType() == LpActionType.CLEAR) {
-                    u.data().clear(NodeType.PERMISSION::matches);
+                    Utils.logDebug("[Messaging] Successfully clear all permission that " + message.getUserName() + " has.");
                 }
             });
         }

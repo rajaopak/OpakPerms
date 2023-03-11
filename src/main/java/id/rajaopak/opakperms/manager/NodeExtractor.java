@@ -17,7 +17,6 @@ import java.time.Instant;
 
 public class NodeExtractor {
 
-
     private final Extractor extractor;
 
     public NodeExtractor(Node node) {
@@ -25,6 +24,8 @@ public class NodeExtractor {
     }
 
     public static Extractor parseNode(Node node) {
+        if (node == null) return null;
+
         if (node instanceof InheritanceNode inheritanceNode) {
             return new InheritanceNodeExtractor(inheritanceNode);
         } else if (node instanceof PrefixNode prefixNode) {
@@ -55,7 +56,9 @@ public class NodeExtractor {
 
         @NonNull String getKey();
 
-        boolean getValue();
+        default boolean getValue() {
+            return true;
+        }
 
         @Nullable Instant getExpiry();
 
