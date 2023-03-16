@@ -9,6 +9,7 @@ import id.rajaopak.opakperms.manager.CommandManager;
 import id.rajaopak.opakperms.manager.NodeExtractor;
 import id.rajaopak.opakperms.messager.UserUpdateMessageImpl;
 import id.rajaopak.opakperms.util.Utils;
+import net.luckperms.api.LuckPerms;
 import net.luckperms.api.model.data.DataMutateResult;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.node.Node;
@@ -29,7 +30,7 @@ public class RankCommand extends CommandManager {
         this.core = core;
     }
 
-    @CommandMethod("setrank <player> [rank]")
+    @CommandMethod("setrank <player> <rank>")
     @CommandPermission("opakperms.setrank")
     public void setRank(final @NonNull CommandSender sender,
                         final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
@@ -38,7 +39,7 @@ public class RankCommand extends CommandManager {
         OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
 
         if (!player.hasPlayedBefore()) {
-            Utils.sendMessage(sender, Utils.getPrefix() + "&cPlayer not found!");
+            Utils.sendMessageWithPrefix(sender, Utils.getPrefix() + "&cPlayer not found!");
             return;
         }
 
@@ -47,7 +48,6 @@ public class RankCommand extends CommandManager {
             Node node = InheritanceNode.builder(group).build();
 
             this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
-
                 if (this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(UUID.randomUUID(), targetName, LpActionType.SET, NodeExtractor.parseNode(node)).asEncodedString())) {
                     Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + player.getName() + " &arank to &b" + group.getName() + "&a.");
                 } else {
@@ -56,7 +56,7 @@ public class RankCommand extends CommandManager {
                     if (result.wasSuccessful()) {
                         user.data().clear(NodeType.INHERITANCE::matches);
                         user.data().add(node);
-                        Utils.sendMessageWithPrefix(sender, "&aSuccessfully remove &e" + group.getName() + " &arank to &b" + player.getName() + "&a.");
+                        Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + player.getName() + " &arank to &b" + group.getName() + "&a.");
                     } else {
                         Utils.sendMessageWithPrefix(sender, "&b" + player.getName() + " &calready have that rank.");
                     }
@@ -67,7 +67,7 @@ public class RankCommand extends CommandManager {
         }
     }
 
-    @CommandMethod("addrank <player> [rank]")
+    @CommandMethod("addrank <player> <rank>")
     @CommandPermission("opakperms.addrank")
     public void addRank(final @NonNull CommandSender sender,
                         final @NonNull @Argument(value = "player", suggestions = "player") String targetName,
@@ -103,7 +103,7 @@ public class RankCommand extends CommandManager {
         }
     }
 
-    @CommandMethod("removerank <player> [rank]")
+    @CommandMethod("removerank <player> <rank>")
     @CommandPermission("opakperms.removerank")
     public void removeRank(final @NonNull CommandSender sender,
                            final @NonNull @Argument(value = "player", suggestions = "player") String targetName,

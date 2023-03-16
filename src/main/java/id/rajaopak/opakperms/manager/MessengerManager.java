@@ -11,11 +11,12 @@ import java.util.UUID;
 
 public class MessengerManager {
 
-    public static String encodeMessageAsString(String type, UUID id, LpActionType actionType, @Nullable JsonElement content) {
+    public static String encodeMessageAsString(String type, UUID id, String userName, LpActionType actionType, @Nullable JsonElement content) {
         JsonObject json = new JsonBuilder()
                 .add("id", id.toString())
-                .add("type", type)
+                .add("validation", type)
                 .add("action", actionType.getName())
+                .add("userName", userName)
                 .consume(o -> {
                     if (content != null) {
                         o.add("content", content);

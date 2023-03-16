@@ -26,7 +26,7 @@ public class Utils {
 
     public static void logDebug(String message) {
         if (OpakPerms.isDebug()) {
-            Bukkit.getLogger().info(colors(message));
+            Bukkit.getLogger().info(colors("[OpakPerms] " + message));
         }
     }
 
@@ -39,7 +39,7 @@ public class Utils {
     }
 
     public static void sendMessageWithPrefix(CommandSender sender, String msg) {
-        sender.sendMessage(getPrefix() + colors(msg));
+        sender.sendMessage(colors(getPrefix() + msg));
     }
 
 }

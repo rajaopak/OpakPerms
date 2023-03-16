@@ -33,14 +33,16 @@ public class LuckPermsListener {
             Node node = e.getNode();
             User user = (User) e.getTarget();
 
-            if (node instanceof InheritanceNode) {
-                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
-            } else if (node instanceof PrefixNode) {
-                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
-            } else if (node instanceof SuffixNode) {
-                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
-            } else if (node instanceof PermissionNode) {
-                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
+            if (this.core.isListenerEnable()) {
+                if (node instanceof InheritanceNode) {
+                    this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
+                } else if (node instanceof PrefixNode) {
+                    this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
+                } else if (node instanceof SuffixNode) {
+                    this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
+                } else if (node instanceof PermissionNode) {
+                    this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
+                }
             }
         }
     }

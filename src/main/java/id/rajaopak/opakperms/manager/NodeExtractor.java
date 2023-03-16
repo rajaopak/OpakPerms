@@ -12,18 +12,15 @@ import net.luckperms.api.node.types.SuffixNode;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import java.time.Duration;
-import java.time.Instant;
-
 public class NodeExtractor {
 
-    private final Extractor extractor;
+    private final Extractor<?> extractor;
 
     public NodeExtractor(Node node) {
         this.extractor = parseNode(node);
     }
 
-    public static Extractor parseNode(Node node) {
+    public static Extractor<?> parseNode(Node node) {
         if (node == null) return null;
 
         if (node instanceof InheritanceNode inheritanceNode) {
@@ -39,20 +36,32 @@ public class NodeExtractor {
         }
     }
 
-    public static JsonElement serialize(Extractor extractor) {
-        return GsonProvider.normal().toJsonTree(extractor);
+    public static JsonElement serialize(Extractor<?> extractor) {
+        return GsonProvider.normal().toJsonTree(extractor, extractor.getClass());
     }
 
-    public static Extractor deserialize(String json) {
-        return GsonProvider.normal().fromJson(json, Extractor.class);
+    public static Extractor<?> deserialize(JsonElement json) {
+        String type = json.getAsJsonObject().get("type").getAsString();
+
+        if (type.equals(NodeType.INHERITANCE.name())) {
+            return GsonProvider.normal().fromJson(json, InheritanceNodeExtractor.class);
+        } else if (type.equals(NodeType.PREFIX.name())) {
+            return GsonProvider.normal().fromJson(json, PrefixNodeExtractor.class);
+        } else if (type.equals(NodeType.SUFFIX.name())) {
+            return GsonProvider.normal().fromJson(json, SuffixNodeExtractor.class);
+        } else if (type.equals(NodeType.PERMISSION.name())) {
+            return GsonProvider.normal().fromJson(json, PermissionNodeExtractor.class);
+        } else {
+            throw new IllegalArgumentException("No extractor has been founded for deserializing: " + json);
+        }
     }
 
-    public Extractor getExtractor() {
+    public Extractor<?> getExtractor() {
         return this.extractor;
     }
 
-    public interface Extractor {
-        @NonNull NodeType<?> getType();
+    public interface Extractor<T extends Extractor<T>> {
+        @NonNull String getType();
 
         @NonNull String getKey();
 
@@ -60,41 +69,35 @@ public class NodeExtractor {
             return true;
         }
 
-        @Nullable Instant getExpiry();
-
-        @Nullable Duration getExpiryDuration();
+        default long getExpiry() {
+            return 0;
+        }
 
         @Nullable ImmutableContextSet getContexts();
     }
 
-    public static class InheritanceNodeExtractor implements Extractor {
+    public static class InheritanceNodeExtractor implements Extractor<InheritanceNodeExtractor> {
 
-
-        private final NodeType<?> type;
+        private final String type;
         private final String key;
         private final boolean value;
-        private final ImmutableContextSet contexts;
-        private Instant expiry;
-        private Duration expiryDuration;
+        private final transient ImmutableContextSet contexts;
+        private long expiry;
 
         public InheritanceNodeExtractor(InheritanceNode node) {
-            this.type = node.getType();
-            this.key = node.getKey();
+            this.type = node.getType().name();
+            this.key = node.getGroupName();
             this.value = node.getValue();
 
             if (node.getExpiry() != null) {
-                this.expiry = node.getExpiry();
-            }
-
-            if (node.getExpiryDuration() != null) {
-                this.expiryDuration = node.getExpiryDuration();
+                this.expiry = node.getExpiry().toEpochMilli();
             }
 
             this.contexts = node.getContexts();
         }
 
         @Override
-        public @NonNull NodeType<?> getType() {
+        public @NonNull String getType() {
             return type;
         }
 
@@ -109,13 +112,8 @@ public class NodeExtractor {
         }
 
         @Override
-        public @Nullable Instant getExpiry() {
+        public long getExpiry() {
             return expiry;
-        }
-
-        @Override
-        public @Nullable Duration getExpiryDuration() {
-            return expiryDuration;
         }
 
         @Override
@@ -124,35 +122,30 @@ public class NodeExtractor {
         }
     }
 
-    public static class PrefixNodeExtractor implements Extractor {
+    public static class PrefixNodeExtractor implements Extractor<PrefixNodeExtractor> {
 
-        private final NodeType<?> type;
+        private final String type;
         private final String key;
         private final int priority;
         private final boolean value;
         private final ImmutableContextSet contexts;
-        private Instant expiry;
-        private Duration expiryDuration;
+        private long expiry;
 
         public PrefixNodeExtractor(PrefixNode node) {
-            this.type = node.getType();
+            this.type = node.getType().name();
             this.key = node.getKey();
             this.priority = node.getPriority();
             this.value = node.getValue();
 
             if (node.getExpiry() != null) {
-                this.expiry = node.getExpiry();
-            }
-
-            if (node.getExpiryDuration() != null) {
-                this.expiryDuration = node.getExpiryDuration();
+                this.expiry = node.getExpiry().toEpochMilli();
             }
 
             this.contexts = node.getContexts();
         }
 
         @Override
-        public @NonNull NodeType<?> getType() {
+        public @NonNull String getType() {
             return type;
         }
 
@@ -171,13 +164,8 @@ public class NodeExtractor {
         }
 
         @Override
-        public @Nullable Instant getExpiry() {
+        public long getExpiry() {
             return expiry;
-        }
-
-        @Override
-        public @Nullable Duration getExpiryDuration() {
-            return expiryDuration;
         }
 
         @Override
@@ -186,35 +174,30 @@ public class NodeExtractor {
         }
     }
 
-    public static class SuffixNodeExtractor implements Extractor {
+    public static class SuffixNodeExtractor implements Extractor<SuffixNodeExtractor> {
 
-        private final NodeType<?> type;
+        private final String type;
         private final String key;
         private final int priority;
         private final boolean value;
         private final ImmutableContextSet contexts;
-        private Instant expiry;
-        private Duration expiryDuration;
+        private long expiry;
 
         public SuffixNodeExtractor(SuffixNode node) {
-            this.type = node.getType();
+            this.type = node.getType().name();
             this.key = node.getKey();
             this.priority = node.getPriority();
             this.value = node.getValue();
 
             if (node.getExpiry() != null) {
-                this.expiry = node.getExpiry();
-            }
-
-            if (node.getExpiryDuration() != null) {
-                this.expiryDuration = node.getExpiryDuration();
+                this.expiry = node.getExpiry().toEpochMilli();
             }
 
             this.contexts = node.getContexts();
         }
 
         @Override
-        public @NonNull NodeType<?> getType() {
+        public @NonNull String getType() {
             return type;
         }
 
@@ -233,13 +216,8 @@ public class NodeExtractor {
         }
 
         @Override
-        public @Nullable Instant getExpiry() {
+        public long getExpiry() {
             return expiry;
-        }
-
-        @Override
-        public @Nullable Duration getExpiryDuration() {
-            return expiryDuration;
         }
 
         @Override
@@ -248,35 +226,30 @@ public class NodeExtractor {
         }
     }
 
-    public static class PermissionNodeExtractor implements Extractor {
+    public static class PermissionNodeExtractor implements Extractor<PermissionNodeExtractor> {
 
-        private final NodeType<?> type;
+        private final String type;
         private final String key;
         private final boolean value;
         private final String permission;
         private final ImmutableContextSet contexts;
-        private Instant expiry;
-        private Duration expiryDuration;
+        private long expiry;
 
         public PermissionNodeExtractor(PermissionNode node) {
-            this.type = node.getType();
+            this.type = node.getType().name();
             this.key = node.getKey();
             this.value = node.getValue();
             this.permission = node.getPermission();
 
             if (node.getExpiry() != null) {
-                this.expiry = node.getExpiry();
-            }
-
-            if (node.getExpiryDuration() != null) {
-                this.expiryDuration = node.getExpiryDuration();
+                this.expiry = node.getExpiry().toEpochMilli();
             }
 
             this.contexts = node.getContexts();
         }
 
         @Override
-        public @NonNull NodeType<?> getType() {
+        public @NonNull String getType() {
             return type;
         }
 
@@ -295,13 +268,8 @@ public class NodeExtractor {
         }
 
         @Override
-        public @Nullable Instant getExpiry() {
+        public long getExpiry() {
             return expiry;
-        }
-
-        @Override
-        public @Nullable Duration getExpiryDuration() {
-            return expiryDuration;
         }
 
         @Override

@@ -44,6 +44,7 @@ java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
+    modularity.inferModulePath = true
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
@@ -51,8 +52,9 @@ java {
 
 shadowJar {
     relocate 'cloud.commandframework', 'id.rajaopak.cloud'
+    relocate 'net.kyori', 'id.rajaopak.kyori'
 
-    doLast {
+    /*doLast {
         copy {
             from archivePath
             into 'D:\\server\\bukkit\\plugins'
@@ -61,7 +63,7 @@ shadowJar {
             from archivePath
             into 'D:\\server\\bukkit-Copy\\plugins'
         }
-    }
+    }*/
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -79,7 +81,7 @@ processResources {
     }
 }
 
-task jar1(type: Jar) {
+/*task jar1(type: Jar) {
     dependsOn shadowJar
     from(shadowJar.archivePath)
     destinationDir file('D:\\server\\bukkit\\plugins')
@@ -89,6 +91,6 @@ task jar2(type: Jar) {
     dependsOn shadowJar
     from(shadowJar.archivePath)
     destinationDir file('D:\\server\\bukkit-Copy\\plugins')
-}
+}*/
 
 assemble.dependsOn shadowJar

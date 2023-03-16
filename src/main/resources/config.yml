@@ -12,3 +12,5 @@ sync-player-rank: true
 sync-player-prefix: false
 sync-player-suffix: false
 sync-player-permission: false
+
+enable-listener: false

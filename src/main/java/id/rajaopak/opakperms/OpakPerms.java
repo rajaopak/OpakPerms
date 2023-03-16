@@ -52,14 +52,19 @@ public final class OpakPerms extends JavaPlugin {
         }
 
         this.saveDefaultConfig();
+
         debug = this.getConfig().getBoolean("debug");
 
         this.redisManager = new RedisManager(this);
 
-        this.redisManager.connect(this.getConfig().getString("host"),
+        if (this.redisManager.connect(this.getConfig().getString("host"),
                 this.getConfig().getInt("port"),
                 this.getConfig().getString("password"),
-                this.getConfig().getString("channel"));
+                this.getConfig().getString("channel"))) {
+            Utils.logDebug("(Redis) Successfully connecting to redis server!");
+        } else {
+            Utils.logDebug("(Redis) Failed to connect to redis server!");
+        }
 
         this.register();
     }
@@ -173,6 +178,10 @@ public final class OpakPerms extends JavaPlugin {
 
     public boolean isSyncPermission() {
         return this.getConfig().getBoolean("sync-player-permission");
+    }
+
+    public boolean isListenerEnable() {
+        return this.getConfig().getBoolean("enable-listener");
     }
 
     public String getRedisChannel() {

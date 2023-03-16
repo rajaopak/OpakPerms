@@ -79,7 +79,7 @@ public class PermissionCommand extends CommandManager {
         });
     }
 
-    @CommandMethod("removepermission <player> [permission]")
+    @CommandMethod("removepermission <player> <permission>")
     @CommandPermission("opakperms.removepermission")
     public void removePermission(final @NonNull CommandSender sender,
                                  final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
