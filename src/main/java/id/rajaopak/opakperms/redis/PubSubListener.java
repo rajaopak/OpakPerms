@@ -12,6 +12,7 @@ import id.rajaopak.opakperms.util.Utils;
 import net.luckperms.api.model.data.DataMutateResult;
 import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
+import net.luckperms.api.model.user.UserManager;
 import net.luckperms.api.node.ChatMetaType;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.node.NodeType;
@@ -22,6 +23,7 @@ import net.luckperms.api.node.types.SuffixNode;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import redis.clients.jedis.JedisPubSub;
 
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -104,7 +106,8 @@ public class PubSubListener extends JedisPubSub {
     }
 
     private void processIncomingMessage(UserUpdateMessageImpl message) {
-        User user = this.core.getLuckPerms().getUserManager().getUser(message.getUserName());
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(message.getUserName()).join();
+        User user = this.core.getLuckPerms().getUserManager().getUser(uuid);
         if (user == null) {
             return;
         }
@@ -128,7 +131,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (g.getExpiry() != 0) {
-                        node.expiry(g.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(g.getExpiry()));
                     }
 
                     u.data().add(node.build());
@@ -141,7 +144,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (p.getExpiry() != 0) {
-                        node.expiry(p.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(p.getExpiry()));
                     }
 
                     u.data().add(node.build());
@@ -154,7 +157,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (s.getExpiry() != 0) {
-                        node.expiry(s.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(s.getExpiry()));
                     }
 
                     u.data().add(node.build());
@@ -167,7 +170,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (per.getExpiry() != 0) {
-                        node.expiry(per.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(per.getExpiry()));
                     }
 
                     u.data().add(node.build());
@@ -191,7 +194,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (g.getExpiry() != 0) {
-                        node.expiry(g.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(g.getExpiry()));
                     }
 
                     u.data().clear(NodeType.INHERITANCE::matches);
@@ -205,7 +208,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (p.getExpiry() != 0) {
-                        node.expiry(p.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(p.getExpiry()));
                     }
 
                     u.data().clear(NodeType.PREFIX::matches);
@@ -219,7 +222,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (s.getExpiry() != 0) {
-                        node.expiry(s.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(s.getExpiry()));
                     }
 
                     u.data().clear(NodeType.PREFIX::matches);
@@ -233,7 +236,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (per.getExpiry() != 0) {
-                        node.expiry(per.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(per.getExpiry()));
                     }
 
                     u.data().clear(NodeType.PERMISSION::matches);
@@ -258,7 +261,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (g.getExpiry() != 0) {
-                        node.expiry(g.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(g.getExpiry()));
                     }
 
                     DataMutateResult result = u.data().remove(node.build());
@@ -284,7 +287,7 @@ public class PubSubListener extends JedisPubSub {
                     }
 
                     if (per.getExpiry() != 0) {
-                        node.expiry(per.getExpiry());
+                        node.expiry(Instant.ofEpochMilli(per.getExpiry()));
                     }
 
                     u.data().remove(node.build());

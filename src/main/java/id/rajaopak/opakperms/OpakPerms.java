@@ -17,6 +17,7 @@ import id.rajaopak.opakperms.util.Utils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import net.kyori.adventure.platform.bukkit.BukkitAudiences;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import net.luckperms.api.LuckPerms;
 import org.bukkit.Bukkit;
@@ -36,15 +37,20 @@ public final class OpakPerms extends JavaPlugin {
 
     @Getter
     private static boolean debug;
+    @Getter
+    private static OpakPerms instance;
     private LuckPerms luckPerms;
     private AnnotationParser<CommandSender> annotationParser;
     private PaperCommandManager<CommandSender> manager;
     private MinecraftHelp<CommandSender> minecraftHelp;
+    private BukkitAudiences audiences;
     private RedisManager redisManager;
+    private Utils utils;
 
     @Override
     public void onEnable() {
         // Plugin startup logic
+        instance = this;
         RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
         if (provider != null) {
             this.luckPerms = provider.getProvider();
@@ -56,6 +62,7 @@ public final class OpakPerms extends JavaPlugin {
         debug = this.getConfig().getBoolean("debug");
 
         this.redisManager = new RedisManager(this);
+        this.utils = new Utils(this);
 
         if (this.redisManager.connect(this.getConfig().getString("host"),
                 this.getConfig().getInt("port"),
@@ -93,10 +100,10 @@ public final class OpakPerms extends JavaPlugin {
         this.annotationParser = new AnnotationParser<>(this.manager,
                 CommandSender.class, commandMetaFunction);
 
-        BukkitAudiences bukkitAudiences = BukkitAudiences.create(this);
+        this.audiences = BukkitAudiences.create(this);
 
         this.minecraftHelp = new MinecraftHelp<>("/opakperms help",
-                bukkitAudiences::sender,
+                this.audiences::sender,
                 this.manager);
 
         if (this.manager.hasCapability(CloudBukkitCapabilities.BRIGADIER)) {
@@ -114,16 +121,16 @@ public final class OpakPerms extends JavaPlugin {
                 .withCommandExecutionHandler()
                 .withDecorator(
                         component -> text()
-                                .append(text(Utils.colors(Utils.getPrefix())))
+                                .append(Utils.getPrefix())
                                 .append(component).build()
-                ).apply(this.manager, bukkitAudiences::sender);
+                ).apply(this.manager, this.audiences::sender);
 
         this.minecraftHelp.setHelpColors(MinecraftHelp.HelpColors.of(
-                TextColor.color(5592405),
-                TextColor.color(16777045),
-                TextColor.color(11184810),
-                TextColor.color(5635925),
-                TextColor.color(5592405)));
+                NamedTextColor.DARK_GRAY,
+                NamedTextColor.YELLOW,
+                NamedTextColor.GRAY,
+                NamedTextColor.GOLD,
+                NamedTextColor.DARK_GRAY));
 
         this.commandRegister();
     }
@@ -142,6 +149,7 @@ public final class OpakPerms extends JavaPlugin {
                     for (Constructor<?> constructor : cons) {
                         if (constructor.getParameterTypes().length == 1 && constructor.getParameterTypes()[0].isAssignableFrom(OpakPerms.class)) {
                             this.parseAnnotationCommands(constructor.newInstance(this));
+                            System.out.println(constructor.getName());
                         }
                     }
                 } catch (Exception e) {

@@ -4,11 +4,13 @@ import cloud.commandframework.annotations.Argument;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.CommandPermission;
 import cloud.commandframework.annotations.specifier.Greedy;
+import cloud.commandframework.annotations.specifier.Quoted;
 import id.rajaopak.opakperms.OpakPerms;
 import id.rajaopak.opakperms.enums.LpActionType;
 import id.rajaopak.opakperms.manager.CommandManager;
 import id.rajaopak.opakperms.manager.NodeExtractor;
 import id.rajaopak.opakperms.messager.UserUpdateMessageImpl;
+import id.rajaopak.opakperms.util.DurationParser;
 import id.rajaopak.opakperms.util.Utils;
 import net.luckperms.api.model.data.DataMutateResult;
 import net.luckperms.api.node.ChatMetaType;
@@ -37,33 +39,33 @@ public class PrefixCommand extends CommandManager {
     public void addPrefix(final @NonNull CommandSender sender,
                           final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
                           final @Argument(value = "priority") int priority,
-                          final @NonNull @Greedy @Argument(value = "prefix") String prefix) {
+                          final @NonNull @Quoted @Argument(value = "prefix") String prefix) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
+
+        if (uuid == null) {
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
+            return;
+        }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         if (!player.hasPlayedBefore()) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
-        if (!prefix.startsWith("\"") && !prefix.endsWith("\"")) {
-            Utils.sendMessageWithPrefix(sender, "&cPlease start the message with \" symbol and ends it with that symbol too.");
-            return;
-        }
-
-        String pref = prefix.replace("\"", "");
-
         this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
-            Node node = PrefixNode.builder(pref, priority).build();
+            Node node = PrefixNode.builder(prefix, priority).build();
 
             if (this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(UUID.randomUUID(), targetName, LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString())) {
-                Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + pref + " &aprefix to &b" + player.getName() + "&a.");
+                Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + prefix + " &aprefix to &b" + player.getName() + "&a.");
             } else {
                 DataMutateResult result = user.data().add(node);
 
                 if (result.wasSuccessful()) {
                     user.data().add(node);
-                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + pref + " &aprefix to &b" + player.getName() + "&a.");
+                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + prefix + " &aprefix to &b" + player.getName() + "&a.");
                 } else {
                     Utils.sendMessageWithPrefix(sender, "&b" + player.getName() + " &calready have that prefix.");
                 }
@@ -75,37 +77,37 @@ public class PrefixCommand extends CommandManager {
     @CommandPermission("opakperms.setprefix")
     public void setPrefix(final @NonNull CommandSender sender,
                           final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
-                          final @NonNull @Greedy @Argument(value = "prefix") String prefix) {
+                          final @NonNull @Quoted @Argument(value = "prefix") String prefix) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
+
+        if (uuid == null) {
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
+            return;
+        }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         if (!player.hasPlayedBefore()) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
-        if (!prefix.startsWith("\"") && !prefix.endsWith("\"")) {
-            Utils.sendMessageWithPrefix(sender, "&cPlease start the message with \" symbol and ends it with that symbol too.");
-            return;
-        }
-
-        String pref = prefix.replace("\"", "");
-
         this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
             Map<Integer, String> inheritedPrefixes = user.getCachedData().getMetaData(QueryOptions.nonContextual()).getPrefixes();
             int priority = inheritedPrefixes.keySet().stream().mapToInt(i -> i + 10).max().orElse(10);
 
-            Node node = PrefixNode.builder(pref, priority).build();
+            Node node = PrefixNode.builder(prefix, priority).build();
 
             if (this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(UUID.randomUUID(), targetName, LpActionType.SET, NodeExtractor.parseNode(node)).asEncodedString())) {
-                Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + pref + " &aprefix to &b" + player + "&a.");
+                Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + prefix + " &aprefix to &b" + player.getName() + "&a.");
             } else {
                 DataMutateResult result = user.data().add(node);
 
                 if (result.wasSuccessful()) {
                     user.data().clear(NodeType.PREFIX::matches);
                     user.data().add(node);
-                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + pref + " &aprefix to &b" + player + "&a.");
+                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + prefix + " &aprefix to &b" + player.getName() + "&a.");
                 } else {
                     Utils.sendMessageWithPrefix(sender, "&b" + player.getName() + " &calready have that prefix.");
                 }
@@ -119,12 +121,14 @@ public class PrefixCommand extends CommandManager {
                              final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
                              final @Argument(value = "priority") int priority) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
 
-        if (!player.hasPlayedBefore()) {
+        if (uuid == null) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
             Node node = ChatMetaType.PREFIX.builder().priority(priority).build();
@@ -148,14 +152,16 @@ public class PrefixCommand extends CommandManager {
     public void clearPrefix(final @NonNull CommandSender sender,
                             final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
 
-        if (!player.hasPlayedBefore()) {
+        if (uuid == null) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
-        Node node = ChatMetaType.PREFIX.builder().priority(0).build();
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
+
+        Node node = PrefixNode.builder("test", 10).build();
 
         this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
             if (this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(UUID.randomUUID(), targetName, LpActionType.CLEAR, NodeExtractor.parseNode(node)).asEncodedString())) {

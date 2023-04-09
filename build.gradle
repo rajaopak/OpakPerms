@@ -18,12 +18,19 @@ repositories {
     }
 }
 
+test {
+    useJUnitPlatform()
+}
+
 dependencies {
     compileOnly 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.4'
     compileOnly 'org.projectlombok:lombok:1.18.26'
 
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testImplementation 'com.google.guava:guava:30.0-android'
 
     implementation 'redis.clients:jedis:4.3.0'
     implementation 'org.jetbrains:annotations:23.0.0'
@@ -54,16 +61,22 @@ shadowJar {
     relocate 'cloud.commandframework', 'id.rajaopak.cloud'
     relocate 'net.kyori', 'id.rajaopak.kyori'
 
-    /*doLast {
-        copy {
+    doLast {
+        /*copy {
             from archivePath
             into 'D:\\server\\bukkit\\plugins'
-        }
+        }*/
         copy {
             from archivePath
             into 'D:\\server\\bukkit-Copy\\plugins'
         }
-    }*/
+        copy {
+            from archivePath
+            into 'deploy'
+        }
+    }
+
+
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -80,17 +93,5 @@ processResources {
         expand props
     }
 }
-
-/*task jar1(type: Jar) {
-    dependsOn shadowJar
-    from(shadowJar.archivePath)
-    destinationDir file('D:\\server\\bukkit\\plugins')
-}
-
-task jar2(type: Jar) {
-    dependsOn shadowJar
-    from(shadowJar.archivePath)
-    destinationDir file('D:\\server\\bukkit-Copy\\plugins')
-}*/
 
 assemble.dependsOn shadowJar

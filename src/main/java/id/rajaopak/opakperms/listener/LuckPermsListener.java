@@ -6,6 +6,7 @@ import id.rajaopak.opakperms.manager.NodeExtractor;
 import id.rajaopak.opakperms.messager.UserUpdateMessageImpl;
 import net.luckperms.api.event.EventBus;
 import net.luckperms.api.event.node.NodeAddEvent;
+import net.luckperms.api.event.node.NodeRemoveEvent;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.node.Node;
 import net.luckperms.api.node.types.InheritanceNode;
@@ -25,10 +26,11 @@ public class LuckPermsListener {
 
     public void register() {
         EventBus eventBus = this.core.getLuckPerms().getEventBus();
-        eventBus.subscribe(this.core, NodeAddEvent.class, this::listener);
+        eventBus.subscribe(this.core, NodeAddEvent.class, this::nodeAddListener);
+        eventBus.subscribe(this.core, NodeRemoveEvent.class, this::nodeRemoveListener);
     }
 
-    public void listener(NodeAddEvent e) {
+    public void nodeAddListener(NodeAddEvent e) {
         if (e.isUser()) {
             Node node = e.getNode();
             User user = (User) e.getTarget();
@@ -43,6 +45,25 @@ public class LuckPermsListener {
                 } else if (node instanceof PermissionNode) {
                     this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString());
                 }
+            }
+        }
+    }
+
+    public void nodeRemoveListener(NodeRemoveEvent e) {
+        if (!e.isUser()) return;
+
+        Node node = e.getNode();
+        User user = (User) e.getTarget();
+
+        if (this.core.isListenerEnable()) {
+            if (node instanceof InheritanceNode) {
+                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.REMOVE, NodeExtractor.parseNode(node)).asEncodedString());
+            } else if (node instanceof PrefixNode) {
+                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.REMOVE, NodeExtractor.parseNode(node)).asEncodedString());
+            } else if (node instanceof SuffixNode) {
+                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.REMOVE, NodeExtractor.parseNode(node)).asEncodedString());
+            } else if (node instanceof PermissionNode) {
+                this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(generatePingId(), user.getUsername(), LpActionType.REMOVE, NodeExtractor.parseNode(node)).asEncodedString());
             }
         }
     }

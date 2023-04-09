@@ -34,10 +34,27 @@ public class RedisManager {
 
         try {
             this.subscriberPool = this.publisherPool = new JedisPool(new JedisPoolConfig(), host, port, 30000, password);
+
+            try (Jedis jedis = this.getSubscriberPool().getResource()) {
+                jedis.ping();
+            } catch (Exception ignored) {
+                this.subscriberPool = this.publisherPool = null;
+                return false;
+            }
+
+            try (Jedis jedis = this.getPublisherPool().getResource()) {
+                jedis.ping();
+            } catch (Exception ignored) {
+                this.subscriberPool = this.publisherPool = null;
+                return false;
+            }
+
             this.setupSub();
         } catch (Exception e) {
             this.subscriberPool = this.publisherPool = null;
-            e.printStackTrace();
+            // e.printStackTrace();
+            this.connect(host, port, password, channel);
+            return false;
         }
 
         return isRedisConnected();
@@ -123,7 +140,7 @@ public class RedisManager {
                 }
             } catch (Exception e) {
                 this.subscriberPool = this.publisherPool = null;
-                e.printStackTrace();
+                // e.printStackTrace();
             }
         });
     }

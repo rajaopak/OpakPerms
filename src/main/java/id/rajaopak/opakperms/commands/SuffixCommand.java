@@ -39,30 +39,30 @@ public class SuffixCommand extends CommandManager {
                           final @Argument(value = "priority") int priority,
                           final @NonNull @Greedy @Argument(value = "suffix") String suffix) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
+
+        if (uuid == null) {
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
+            return;
+        }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         if (!player.hasPlayedBefore()) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
-        if (!suffix.startsWith("\"") && !suffix.endsWith("\"")) {
-            Utils.sendMessageWithPrefix(sender, "&cPlease start the message with \" symbol and ends it with that symbol too.");
-            return;
-        }
-
-        String pref = suffix.replace("\"", "");
-
         this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
-            Node node = SuffixNode.builder(pref, priority).build();
+            Node node = SuffixNode.builder(suffix, priority).build();
 
             if (this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(UUID.randomUUID(), targetName, LpActionType.ADD, NodeExtractor.parseNode(node)).asEncodedString())) {
-                Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + pref + " &asuffix to &b" + player.getName() + "&a.");
+                Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + suffix + " &asuffix to &b" + player.getName() + "&a.");
             } else {
                 DataMutateResult result = user.data().add(node);
 
                 if (result.wasSuccessful()) {
-                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + pref + " &asuffix to &b" + player.getName() + "&a.");
+                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully add &e" + suffix + " &asuffix to &b" + player.getName() + "&a.");
                 } else {
                     Utils.sendMessageWithPrefix(sender, "&b" + player.getName() + " &calready have that suffix.");
                 }
@@ -76,35 +76,35 @@ public class SuffixCommand extends CommandManager {
                           final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
                           final @NonNull @Greedy @Argument(value = "suffix") String suffix) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
+
+        if (uuid == null) {
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
+            return;
+        }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         if (!player.hasPlayedBefore()) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
             return;
         }
 
-        if (!suffix.startsWith("\"") && !suffix.endsWith("\"")) {
-            Utils.sendMessageWithPrefix(sender, "&cPlease start the message with \" symbol and ends it with that symbol too.");
-            return;
-        }
-
-        String pref = suffix.replace("\"", "");
-
         this.core.getLuckPerms().getUserManager().modifyUser(player.getUniqueId(), user -> {
             Map<Integer, String> inheritedSuffixes = user.getCachedData().getMetaData(QueryOptions.nonContextual()).getSuffixes();
             int priority = inheritedSuffixes.keySet().stream().mapToInt(i -> i + 10).max().orElse(10);
 
-            Node node = SuffixNode.builder(pref, priority).build();
+            Node node = SuffixNode.builder(suffix, priority).build();
 
             if (this.core.getRedisManager().sendRequest(new UserUpdateMessageImpl(UUID.randomUUID(), targetName, LpActionType.SET, NodeExtractor.parseNode(node)).asEncodedString())) {
-                Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + pref + " &asuffix to &b" + player.getName() + "&a.");
+                Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + suffix + " &asuffix to &b" + player.getName() + "&a.");
             } else {
                 DataMutateResult result = user.data().add(node);
 
                 if (result.wasSuccessful()) {
                     user.data().clear(NodeType.SUFFIX::matches);
                     user.data().add(node);
-                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + pref + " &asuffix to &b" + player.getName() + "&a.");
+                    Utils.sendMessageWithPrefix(sender, "&aSuccessfully set &e" + suffix + " &asuffix to &b" + player.getName() + "&a.");
                 } else {
                     Utils.sendMessageWithPrefix(sender, "&b" + player.getName() + " &calready have that suffix.");
                 }
@@ -118,7 +118,14 @@ public class SuffixCommand extends CommandManager {
                              final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName,
                              final @Argument(value = "priority") int priority) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
+
+        if (uuid == null) {
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
+            return;
+        }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         if (!player.hasPlayedBefore()) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
@@ -147,7 +154,14 @@ public class SuffixCommand extends CommandManager {
     public void clearSuffix(final @NonNull CommandSender sender,
                             final @NonNull @Argument(value = "player", defaultValue = "self", suggestions = "player") String targetName) {
 
-        OfflinePlayer player = this.core.getServer().getOfflinePlayer(targetName);
+        UUID uuid = this.core.getLuckPerms().getUserManager().lookupUniqueId(targetName).join();
+
+        if (uuid == null) {
+            Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
+            return;
+        }
+
+        OfflinePlayer player = this.core.getServer().getOfflinePlayer(uuid);
 
         if (!player.hasPlayedBefore()) {
             Utils.sendMessageWithPrefix(sender, "&cPlayer not found!");
